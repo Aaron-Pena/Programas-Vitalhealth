@@ -1,4 +1,5 @@
 import tkinter as tk
+import pandas 
 from tkinter import *
 from datetime import datetime
 
@@ -23,8 +24,13 @@ def write_last_id_to_file(last_id):
 # Create the main window
 ws = tk.Tk()
 ws.title("Tickets Vitalhealth")
-ws.geometry('720x640+400+50')
+ws.geometry('1080x640+250+30')
 current_id = read_last_id_from_file()
+df = pandas.read_csv('output.csv',
+                     index_col='id',
+                     header=0,
+                     names=['id','Departamento','Numero de serie','Fecha de Generacion','Problema','Status'])
+print (df)
 
 tk.Label(ws,text="Sistema de tickets...",font=('Arial',15)).pack(fill=tk.BOTH, expand=False)
 
@@ -105,12 +111,18 @@ def Agregar_Datos():
     # Append the data to the file
     with open('output.csv', 'a') as file:
         file.write(', '.join(map(str, input_data)) + '\n')
-        
-    # Update the ID for display
-    Id.config(state='normal')  # Allow modification
+       
+    #Actualizar Id
+    Id.config(state='normal')  
     Id.delete(1.0, tk.END)
     Id.insert(tk.END, str(current_id).zfill(3))
-    Id.config(state='disabled')  # Disable modification 
+    Id.config(state='disabled') 
+    
+    # Actualizar Actividades 
+    df.config(state='normal')  
+    df.delete(1.0, tk.END)
+    df.insert(tk.END, str(df))
+    df.config(state='disabled')  
 
     # Clear the input fields
     dp_variable.set("---")
@@ -128,6 +140,13 @@ Display.pack()
 
 #boton de finalizar
 tk.Label(ws,text="\nArea de finalizacion",font=('Arial',10)).pack(fill=tk.BOTH, expand=False)
+
+# Tabla de actividades
+tk.Label(ws, text="Actividades", font=('Arial', 10)).pack(fill=tk.BOTH, expand=False)
+Act = tk.Text(ws, height=70, width=100, bg="white")
+Act.insert(tk.END, str(df))
+Act.config(state='disabled')
+Act.pack()
 
 # Initialize the current ID from the last used ID in the CSV file
 current_id = read_last_id_from_file()
