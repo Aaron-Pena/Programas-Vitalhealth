@@ -26,7 +26,7 @@ def write_last_id_to_file(last_id):
 # Ventana principal
 ws = tk.Tk()
 ws.title("Tickets Vitalhealth")
-ws.geometry('1280x640+100+30')
+#ws.geometry('1280x640+100+30')
 current_id = read_last_id_from_file()
 df = pandas.read_csv('output.csv',
                      index_col='id',
@@ -49,7 +49,7 @@ def set_current_date():
 # ID
 tk.Label(left_frame, text="Id", font=('Arial', 10)).pack(fill=tk.BOTH, expand=False)
 Id = tk.Text(left_frame, height=1, width=25, bg="white")
-Id.insert(tk.END, str(current_id).zfill(3))
+Id.insert(tk.END, str(current_id))
 Id.config(state='disabled')
 Id.pack()
 
@@ -57,7 +57,7 @@ Id.pack()
 tk.Label(left_frame, text="\nDepartamentos", font=('Arial', 10)).pack(fill=tk.BOTH, expand=False)
 dp_variable = tk.StringVar(left_frame)
 dp_variable.set("---")
-dropdown = tk.OptionMenu(left_frame, dp_variable, "Contaduria", "Eventos", "Marketing", "Customer Service")
+dropdown = tk.OptionMenu(left_frame, dp_variable, "Finanzas", "Eventos", "Marketing", "Customer Service")
 dropdown.pack()
 
 # TextBox editable de Numero de laptop
@@ -85,11 +85,50 @@ status.insert(tk.END, "Incomplete")
 status.config(state='disabled')
 status.pack()
 
+# Mensaje de error
+error_label = tk.Label(left_frame, text="", font=('Arial', 10), fg="red")
+error_label.pack()
+
+
 # boton de agregar
 def Agregar_Datos():
     global current_id
-    input_data = str(current_id).zfill(3), dp_variable.get(), serial.get("1.0", "end-1c"), date_text.get("1.0", "end-1c"), problem.get("1.0", "end-1c"), status.get("1.0", "end-1c")
+    global df
+    
+    # Checkar si estan llenados los campos de problemas, serial y departamento
+    if not problem.get("1.0", "end-1c").strip() or not serial.get("1.0", "end-1c").strip() or dp_variable.get() == "---":
+        # Mostar mensaje de error
+        error_message = "Favor de llenar los campos."
+        error_label.config(text=error_message, fg="red")
+        if not problem.get("1.0", "end-1c").strip():
+            problem.config(bg="pink")
+        else:
+            problem.config(bg="white")
+        if not serial.get("1.0", "end-1c").strip():
+            serial.config(bg="pink")
+        else:
+            serial.config(bg="white")
+        if dp_variable.get() == "---":
+            dropdown.config(bg="pink")
+        else:
+            dropdown.config(bg="white")
+        return
+
+      # Resetear mensaje de error y colores
+    error_label.config(text="")
+    problem.config(bg="white")
+    serial.config(bg="white")
+    dropdown.config(bg="white")
+    
+    input_data =( 
+        str(current_id),
+        dp_variable.get(), serial.get("1.0", "end-1c"),
+        date_text.get("1.0", "end-1c"), 
+        problem.get("1.0", "end-1c"), 
+        status.get("1.0", "end-1c")
+        )
     print(input_data)
+    print(df)
 
     # Incrementar ID
     current_id += 1
@@ -115,7 +154,7 @@ def Agregar_Datos():
     # Actualizar Id
     Id.config(state='normal')
     Id.delete(1.0, tk.END)
-    Id.insert(tk.END, str(current_id).zfill(3))
+    Id.insert(tk.END, str(current_id))
     Id.config(state='disabled')
 
     # Actualizar Actividades
@@ -148,6 +187,36 @@ Act = tk.Text(ws, height=70, width=100, bg="white")
 Act.insert(tk.END, df.to_string(index=True))  
 Act.config(state='disabled')
 Act.pack(side=tk.RIGHT, padx=10, pady=10)
+
+# Sección para cambiar el estado a "Completado"
+tk.Label(left_frame, text="\nCambiar Estado a Completado", font=('Arial', 10)).pack(fill=tk.BOTH, expand=False)
+
+# Entrada de ID
+id_to_complete_label = tk.Label(left_frame, text="ID a Completar", font=('Arial', 10))
+id_to_complete_label.pack(fill=tk.BOTH, expand=False)
+id_to_complete_entry = tk.Entry(left_frame, width=25)
+id_to_complete_entry.pack()
+
+# Botón para cambiar estado
+def cambiar_estado():
+    global df
+    try:
+        id_to_complete = int(id_to_complete_entry.get())
+        df.loc[id_to_complete, 'Status'] = 'Completed'
+        # Reescribir los cambios al CSV
+        df.to_csv('output.csv', header=True, index=True, mode='w')
+        # Actualizar Actividades
+        Act.config(state='normal')
+        Act.delete(1.0, tk.END)
+        Act.insert(tk.END, df.to_string(index=True, col_space=0, justify='right'))
+        Act.config(state='disabled')
+        id_to_complete_label.config(text="Estado cambiado a 'Completed'", fg="green")
+        print(df)
+    except Exception as e:
+        id_to_complete_label.config(text=f"Favor de insertar ID valido", fg="red")
+
+cambiar_estado_button = tk.Button(left_frame, height=2, width=20, text="Cambiar Estado", command=cambiar_estado)
+cambiar_estado_button.pack()
 
 
 ws.columnconfigure(2, weight=2)  
