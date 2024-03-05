@@ -249,16 +249,19 @@ function displayItemOptions(items) {
 
 
   
-    items.forEach(item => {
-  
-      const optionFilter = document.createElement('option');
-  
-      optionFilter.value = item.nombre;
-      optionFilter.text = `${item.nombre} - ${(item.cantidad)}`;
-  
-     
-  
-      const optionModal = document.createElement('option');
+  items.forEach(item => {
+    
+    const optionFilter = document.createElement('option');
+
+    optionFilter.value = item.nombre;
+
+    itemFilter.appendChild(optionFilter);
+
+    const optionModal = document.createElement('option');
+
+    optionModal.value = item.quantity;
+
+    itemModal.appendChild(optionModal);
  
    
     });
