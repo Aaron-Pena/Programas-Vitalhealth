@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en">
+<html>
+    <head>
+        <meta charset="utf-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+        <meta name="description" content="">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <link href="https://fonts.googleapis.com/css2?family=Rajdhani" rel="stylesheet">
+        <title>Inventario</title>
+       
+        <link rel="stylesheet" href="style.css">
+    </head>
+    <body>
+        <div id="menu">
+            <h1>Inventario Laboratorio</h1>
+
+            <button id="addStock" class="btn-action">Nuevo Item</button> 
+           <!-- <button id="editStock" class="btn-action">Modificar Item</button>-->
+
+        </div>
+
+        <form id="filter-form" class="filter-section">    
+      
+            <input type="text" id="product-filter" placeholder="Producto" class="filter-field">
+            <input type="number" id="quantity-filter" placeholder="Cantidad" class="filter-field">
+
+            <input type="date" id="date-filter" placeholder="Fecha" class="filter-field">
+      
+            <button type="submit" id="apply-filters" class="btn-submit">Consultar</button>
+            <button type="reset" id="reset-filters" class="btn">Limpiar</button>
+      
+          </form>
+
+
+        <div class="table-container">
+
+            <table id="data-table">
+              <thead>
+                <tr>
+                  <th>Id</th> 
+                  <th>Item</th> 
+                  <th>Descripcion</th> 
+                  <th>Fecha de recibido</th>
+                  <th>Cantidad</th>
+                  <th></th>
+                </tr>
+              </thead>
+              <tbody id="data-table-body">
+                <!--Datos de API-->
+              </tbody>
+            </table>
+          </div>
+
+       
+      
+          <div id="modal-background" class="modal-background">
+
+          </div>
+
+          <div id="modal" class="modal">
+
+            <h2>Nuevo Producto</h2>
+      
+            <form id="item-form" class="form-section">
+      
+              <label for="product-field">Producto:</label>
+              <input type="text" id="product-field" class="form-field" required>
+      
+              <label for="describe-field">Descripcion:</label>
+              <input type="text" id="describe-field" class="form-field">
+      
+
+              <label for="dateofRec-field">Fecha de recibido:</label>
+              <input type="date" id="dateofRec-field" class="form-field" required>
+
+              <label for="quantity-field">Cantidad:</label>
+              <input type="number" id="quantity-field" class="form-field" required>
+
+              <button type="submit" class="btn-submit">Guardar Producto</button>
+      
+            </form>
+      
+          </div>
+          <div id="message-not-found"></div>
+         <div id="message" class="message">
+            <p>No se ha realizado una consulta</p>
+          </div>
+          <script src="shared/utils.js"></script>
+  <script src="shared/fetch-api.js"></script>
+        <script src="script.js" async defer></script>
+    </body>
+</html>
+
+
