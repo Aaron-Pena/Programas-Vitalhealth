@@ -18,7 +18,7 @@
             <h1>Inventario Laboratorio</h1>
             <button id="addStock" class="btn-action">Nuevo Item</button> 
         </div>
-      </main>
+      
 
         <form id="filter-form" class="filter-section">    
       
@@ -51,7 +51,10 @@
               </tbody>
             </table>
           </div>
-
+          <div id="message" class="message">
+            <p>No se han hecho consultas.</p>
+          </div>
+      
        
       
           <div id="modal-background" class="modal-background">
@@ -82,10 +85,8 @@
             </form>
       
           </div>
-          <div id="message-not-found"></div>
-         <div id="message" class="message">
-            <p>No se ha realizado una consulta</p>
-          </div>
+        </main>
+
           <script src="shared/utils.js"></script>
   <script src="shared/fetch-api.js"></script>
         <script src="script.js" async defer></script>

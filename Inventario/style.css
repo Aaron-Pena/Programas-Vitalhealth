@@ -11,10 +11,24 @@
     --color-primario-light: #7ab657ac;
     --color-primario-dark: #446c2c; 
     --color-primario-letras: #aecf9a;
-    --color-secundario: #2d4c80 ;
+    --color-secundario: #7198dd ;
     --color-secundario-fuerte: #102c6e; 
-    --color-secundario-light: #2e5290; 
+    --color-secundario-light: #5b7db7d5; 
     --color-terciario: #aab843af ;
+
+    --color-button:#8dbdbc;
+    --color-buttonActive:#628584;
+    --color-buttonSub:#0b9bb3;
+    --color-buttonSubAct:#10606e;
+    --color-delete:red;
+    --color-deleteAct:#c90303;
+    --color-ModalBox:#85838394;
+    
+    --color-update:#5b79fc;
+    --color-updateAct:#4f65ca;
+    --color-update-saving:#4dc02a;
+    --color-update-savingAct:#55972f;
+
 
     --size-header: 75px;
     --size-nav-item: 60px;
@@ -41,14 +55,18 @@ body {
 
   main {
     text-align: center;
+    min-height: calc(100vh - 136px);
     border-radius: 3px;
     padding: 2rem 2rem;
     margin: 1.5rem; 
+    background-color: var(--color-secundario-light);
+    border-radius: 8px;
   }
   
   h1 {
-    font-size: 1.75rem;
-    margin-bottom: 20px; 
+    background-color:var(--color-primario-light);
+    margin: 1.25%;
+    border-radius: 8px;
   }
   
 
@@ -229,15 +247,42 @@ button.btn-submit:hover {
 }
 
 button.btn-delete {
-  background-color: red;
+  background-color: var(--color-delete);
     border-radius: 8px; 
-    border: 1px solid black;
-    color: var(--color-white);
+    border: 1px solid var(--color-black);
+    color: var(--color-black);
 }
 
 button.btn-delete:hover {
-  background: rgb(70, 4, 4);
+  background: var(--color-deleteAct);
   border-radius: 8px; 
+  
+}
+
+button.btn-update {
+  background-color: var(--color-update);
+    border-radius: 8px; 
+    border: 1px solid var(--color-black);
+    color: var(--color-black);
+}
+
+button.btn-update:hover {
+  background: var(--color-updateAct);
+  border-radius: 8px; 
+  
+}
+
+button.btn-update-saving {
+  background-color:var(--color-update-saving);
+    border-radius: 8px; 
+    border: 1px solid var(--color-black);
+    color: var(--color-black);
+}
+
+button.btn-update-saving:hover {
+  background: var(--color-update-savingAct);
+  border-radius: 8px; 
+  
 }
 
 .modal-background {

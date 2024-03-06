@@ -1,28 +1,28 @@
 //#region 2. MODELO DE DATOS (MODELS)
 
-class LabItems {
-  constructor (id, nombre, descripcion, fecha, cantidad){
-      this.id = id;
-      this.nombre = nombre ;
-      this.descripcion = descripcion;
-      this.fecha = fecha;
-      this.cantidad = cantidad;
-      }
+class Task {
+  constructor(id, nombre, descripcion, fecha, cantidad) {
+    this.id = id;
+    this.nombre = nombre ;
+    this.descripcion = descripcion;
+    this.fecha = fecha;
+    this.cantidad = cantidad; 
+  }
 }
 
-function mapAPIToProducts(data) {
-  return data.map(prod => {
-    return new LabItems(
-      prod.id,
-      prod.nombre,
-      prod.descripcion,
-      new Date(prod.fecha),
-      prod.cantidad,
+function mapAPIToTasks(data) {
+  return data.map(item => {
+    return new Task(
+      item.id,
+      item.nombre,
+      item.descripcion,
+      new Date(item.fecha),
+      item.cantidad
     );
   });
 }
 
-class ItemDescriptor {
+class TaskDescriptor {
 
   constructor(id, nombre, cantidad) {
     this.id = id;
@@ -33,12 +33,12 @@ class ItemDescriptor {
 }
 
 
-function mapAPIToItemDescriptors(data) {
-  return data.map(item => {
-    return new ItemDescriptor(
-      item.id,
-      item.nombre,
-      item.cantidad
+function mapAPIToTaskDescriptors(data) {
+  return data.map(task => {
+    return new TaskDescriptor(
+      task.id,
+      task.nombre,
+      task.cantidad
     );
   });
 }
@@ -47,13 +47,13 @@ function mapAPIToItemDescriptors(data) {
 
 //#region 3. VENTAS (VIEW)
 
-function displayProductsView(products) {
+function displayTasksView(tasks) {
 
   clearTable();
 
   showLoadingMessage();
 
-  if (products.length === 0) {
+  if (tasks.length === 0) {
 
     showNotFoundMessage();
 
@@ -61,42 +61,44 @@ function displayProductsView(products) {
 
     hideMessage();
 
-    displayProductsTable(products);
+    displayTasksTable(tasks);
   }
 
 }
 
 
-function displayClearProductsView() {
+function displayClearTasksView() {
   clearTable();
 
   showInitialMessage();
 }
 
-function displayProductsTable(products) {
-
+function displayTasksTable(tasks) {
   const tablaBody = document.getElementById('data-table-body');
 
-  products.forEach(product => {
-
+  tasks.forEach(task => {
     const row = document.createElement('tr');
-
     row.innerHTML = `
-      <td>${product.id}</td>
-      <td>${product.nombre}</td>
-      <td>${product.descripcion}</td>
-      <td>${formatDate(product.fecha)}</td>
-      <td>${product.cantidad}</td>
+      <td>${task.id}</td>
+      <td class="editable" contenteditable="false">${task.nombre}</td>
+      <td class="editable" contenteditable="false">${task.descripcion}</td>
+      <td class="editable" contenteditable="false">${formatDate(task.fecha)}</td>
+      <td class="editable" contenteditable="false">${task.cantidad}</td>
       <td>
-        <button class="btn-delete" data-product-id="${product.id}">Eliminar</button>
+        <button class="btn-update" data-task-id="${task.id}">Editar</button>
+        <button class="btn-delete" data-task-id="${task.id}">Eliminar</button>
       </td>
     `;
 
-    tablaBody.appendChild(row);
+    const editButton = row.querySelector('.btn-update');
+    editButton.addEventListener('click', () => {
+      toggleEditRow(row);
+    });
 
+    tablaBody.appendChild(row);
   });
 
-  initDeleteProductButtonHandler();
+  initDeleteTaskButtonHandler();
 }
 
 function clearTable() {
@@ -116,7 +118,7 @@ function showLoadingMessage() {
 function showInitialMessage() {
   const message = document.getElementById('message');
 
-  message.innerHTML = 'No se ha realizado una consulta de productos.';
+  message.innerHTML = 'No se ha realizado una consulta.';
 
   message.style.display = 'block';
 }
@@ -124,7 +126,7 @@ function showInitialMessage() {
 function showNotFoundMessage() {
   const message = document.getElementById('message');
 
-  message.innerHTML = 'No se encontraron productos con el filtro proporcionado.';
+  message.innerHTML = 'No se encontraron consultas con el filtro proporcionado.';
 
   message.style.display = 'block';
 }
@@ -135,6 +137,40 @@ function hideMessage() {
   message.style.display = 'none';
 }
 
+
+
+function toggleEditRow(row) {
+
+  const editButton = row.querySelector('.btn-update');
+  const taskId = editButton.getAttribute('data-task-id');
+  const editableCells = row.querySelectorAll('.editable');
+
+  if (editButton.textContent === 'Editar') {
+    editButton.textContent = 'Guardar';
+    editButton.classList.add('btn-update-saving');
+    editableCells.forEach(cell => {
+      cell.contentEditable = 'true';
+    });
+  } else {
+    editButton.textContent = 'Editar';
+    editButton.classList.remove('btn-update-saving'); 
+    editableCells.forEach(cell => {
+      cell.contentEditable = 'false';
+    });
+
+    const taskData = {
+      id:taskId,
+      nombre: row.cells[1].textContent,
+      descripcion: row.cells[2].textContent,
+      fecha: row.cells[3].textContent,
+      cantidad: row.cells[4].textContent,
+    };
+
+    saveEdit(taskId,taskData);
+  };
+}
+
+
 //#endregion
 
 //#region 4. FILTROS (VIEW)
@@ -143,97 +179,101 @@ function initFilterButtonsHandler() {
 
   document.getElementById('filter-form').addEventListener('submit', event => {
     event.preventDefault();
-    searchProducts();
+    searchTasks();
   });
 
-  document.getElementById('reset-filters').addEventListener('click', () => clearProducts());
+  document.getElementById('reset-filters').addEventListener('click', () => clearTasks());
 
 }
 
 
-function clearProducts() {
+function clearTasks() {
   document.querySelector('select.filter-field').selectedIndex = 0;
   document.querySelectorAll('input.filter-field').forEach(input => input.value = '');
 
-  displayClearProductsView();
+  displayClearTasksView();
 }
 
 
-function resetProducts() {
+function resetTasks() {
   document.querySelector('select.filter-field').selectedIndex = 0;
   document.querySelectorAll('input.filter-field').forEach(input => input.value = '');
-  searchProducts();
+ searchTasks();
 }
 
 
-function searchProducts() {
+function searchTasks() {
   const nombre = document.getElementById('product-filter').value;
-  const cantidad = document.getElementById('quantity-filter').value;
   const fecha = document.getElementById('date-filter').value;
+  const cantidad = document.getElementById('quantity-filter').value;
   
-  getProductsData(nombre, fecha ,cantidad);
+
+  getTasksData(nombre, fecha ,cantidad);
 }
 
 //#endregion
 
 //#region 5. BOTONES PARA AGREGAR Y ELIMINAR VENTAS (VIEW)
 
-function initAddProductButtonsHandler() {
+function initAddTaskButtonsHandler() {
 
 document.getElementById('addStock').addEventListener('click', () => {
-  openAddProductModal()
+  openAddTaskModal()
 });
 
 document.getElementById('modal-background').addEventListener('click', () => {
-  closeAddProductModal();
+  closeAddTaskModal();
 });
 
 document.getElementById('item-form').addEventListener('submit', event => {
   event.preventDefault();
-  processSubmitProduct();
+  processSubmitTask();
 });
 
 }
-function openAddProductModal() {
+function openAddTaskModal() {
   document.getElementById('item-form').reset();
   document.getElementById('modal-background').style.display = 'block';
   document.getElementById('modal').style.display = 'block';
 }
 
 
-function closeAddProductModal() {
+function closeAddTaskModal() {
   document.getElementById('item-form').reset();
   document.getElementById('modal-background').style.display = 'none';
   document.getElementById('modal').style.display = 'none';
 }
 
 
-function processSubmitProduct() {
+function processSubmitTask() {
   const product = document.getElementById('product-field').value;
   const describe = document.getElementById('describe-field').value;
   const dateofRec = document.getElementById('dateofRec-field').value;
   const quantity = document.getElementById('quantity-field').value;
 
-  const saleToSave = new LabItems(
+  
+ const taskToSave = new Task(
     null,
-      product,
-      describe,
-      dateofRec,
-      quantity,
+    product,
+    describe,
+    dateofRec,
+    quantity,
   );
 
-  createProduct(saleToSave);
+  createTask(taskToSave);
 }
 
 
-function initDeleteProductButtonHandler() {
+//#endregion
+
+function initDeleteTaskButtonHandler() {
 
   document.querySelectorAll('.btn-delete').forEach(button => {
 
     button.addEventListener('click', () => {
 
-      const itemID = button.getAttribute('data-product-id');
-      deleteProduct(itemID); 
+      const taskId = button.getAttribute('data-task-id');
+      deleteTask(taskId); 
 
     });
 
@@ -242,90 +282,90 @@ function initDeleteProductButtonHandler() {
 }
 
 
+
+
 //#endregion
 
 //#region 6. CARGAR DATOS DE MODELOS PARA FORM (VIEW)
-function displayItemOptions(items) {
-
-    const itemFilter = document.getElementById('product-filter');
-    const itemModal = document.getElementById('form-field');
-  
-
-items.forEach(item => {
-  
-  const optionFilter = document.createElement('option');
-
-  optionFilter.value = item.cantidad;
-
-  itemFilter.appendChild(optionFilter);
-
-  const optionModal = document.createElement('option');
-
-  optionModal.value = item.quantity;
-
-  itemModal.appendChild(optionModal);
-
- 
-  });
-
-}
-
 
 
 //#endregion
  
 //#region 7. CONSUMO DE DATOS DESDE API
 
-function getItemData() {
+function getTaskData() {
   fetchAPI(`${apiURL}/laboratorio`, 'GET')
     .then(data => {
-      const itemsList = mapAPIToItemDescriptors(data);
-      displayItemOptions(itemsList);
+      const tasksList = mapAPIToTaskDescriptors(data);
+      //displayTaskOptions(tasksList);
     });
 
 }
 
 
-function getProductsData(nombre, fecha, cantidad) {
+function getTasksData(nombre, fecha, cantidad) {
 
-  const url = buildGetProductsDataUrl(nombre,fecha,cantidad);
+  const url = buildGetTasksDataUrl(nombre, fecha, cantidad);
 
   fetchAPI(url, 'GET')
     .then(data => {
-      const productsList = mapAPIToProducts(data);
-      displayProductsView(productsList);
+      const tasksList = mapAPIToTasks(data);
+      displayTasksView(tasksList);
     });
 }
 
+function createTask(task) {
 
-function deleteProduct(itemID) {
+  fetchAPI(`${apiURL}/laboratorio`, 'POST', task)
+    .then(task => {
+      closeAddTaskModal();
+      //resetTasks();
+      window.alert(`Producto ${task.id} creada correctamente.`);
+    });
 
-  const confirm = window.confirm(`¿Estás seguro de que deseas eliminar el producto ${itemID}?`);
+}
+
+function deleteTask(taskId) {
+
+  const confirm = window.confirm(`¿Estás seguro de que deseas eliminar el producto ${taskId}?`);
 
   if (confirm) {
 
-    fetchAPI(`${apiURL}/laboratorio/${itemID}`, 'DELETE')
+    fetchAPI(`${apiURL}/laboratorio/${taskId}`, 'DELETE')
       .then(() => {
-        resetProducts();
+       // resetTasks();
         window.alert("Producto eliminada.");
       });
 
   }
 }
 
-function createProduct(product) {
 
-  fetchAPI(`${apiURL}/laboratorio`, 'POST', product)
-    .then(product => {
-      closeAddProductModal();
-      resetProducts();
-      window.alert(`Producto ${product.id} creada correctamente.`);
+
+
+function saveEdit(taskId,taskData) {
+  fetch(`${apiURL}/laboratorio/${taskId}`, {
+    method: 'PUT',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify(taskData),
+  })
+    .then(response => {
+      if (response.ok) {
+        console.log("Datos enviados")
+      } else {
+        console.error('Error al guardar los datos en el servidor');
+      }
+    })
+    .catch(error => {
+      console.error('Error en la solicitud HTTP:', error);
     });
-
 }
 
 
-function buildGetProductsDataUrl(nombre, cantidad, fecha) {
+
+function buildGetTasksDataUrl(nombre,fecha, cantidad) {
 
 const url = new URL(`${apiURL}/laboratorio`);
 
@@ -333,37 +373,30 @@ if (nombre) {
   url.searchParams.append('nombre', nombre);
 }
 
-if (cantidad) {
-  url.searchParams.append('cantidad', cantidad);
-}
-
 if (fecha) {
   url.searchParams.append('fecha', fecha);
 }
 
-return url;
+if (cantidad) {
+  url.searchParams.append('cantidad', cantidad);
 }
 
 
-
-
+return url;
+}
 
 //#endregion
 
 //#region 8. INICIALIZAMOS FUNCIONALIDAD (CONTROLLER)
 
-initAddProductButtonsHandler();
+initAddTaskButtonsHandler();
 
 initFilterButtonsHandler();
 
-getItemData();
+getTaskData();
 
 //#endregion
-//66
-//x
-//68
-//tonotos
-//hola
+
 
 
 
